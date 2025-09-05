@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Orbitron:wght@400..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <title>Todo App</title>
+  </head>
+  <!-- класс для смены темы -->
+  <body id="app" class="light">
+   
+    <div class="center-container">
+      <h1>TODO LIST</h1>
+      <div class="controls">
+        <!-- формочка для ввода таски -->
+        <form id="todo-form" class="add-box">
+          <input type="text" id="todo-input" placeholder="Add todo..." />
+          <svg class="add-icon" width="21" height="21" viewBox="0 0 21 21">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m381-240 424-424-57-56-368 367-169-170-57 57 227 226Zm0 113L42-466l169-170 170 170 366-367 172 168-538 538Z"/></svg>
+          </svg>
+          <!-- список задач -->
+          <ul id="todo-list" class="todoList">
+          </ul>
+          <!-- модалка для редактирования -->
+      <dialog id="editModal" class="edit-modal">
+<form id="modal-box">
+  <label for="title">Title:</label>
+  <input type="text" id="title" name="title">
+  <br>
+  <div class="button-modal">
+  <button type="submit" class="apply-btn">Apply</button>
+  <button type="button" id="close-btn" class="close-btn">Cancel</button>
+  </div>
+</form>
+    </dialog>
+        </form>
+        <!-- фильтр для задач -->
+        <select name="todo" id="todo-select">
+          <option value="all">ALL</option>
+          <option value="isActive">Active</option>
+          <option value="completed">Done</option>
+        </select>
+        <!-- сортировка по возрастанию и убыванию -->
+        <select name="todo-sort" id="todo-sort" class="todo-sort">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+        <!-- переключение темы -->
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="moon-icon"></span>
+          <span class="sun-icon"></span>
+        </label>
+      </div>
+<!-- модалка подтверждения удаления -->
+      <div id="confirmationBox" style="display: none;" class="undo">
+        <p>Undo</p>
+        <span id="time" class="time"></span>
+        <button id="noDelete" class="noDelete">←</button>
+
+      </div>
+      <button id="del-all-todo-btn" class="fab">✖</button>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="script.js" defer></script>
+  </body>
+</html>
