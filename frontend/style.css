@@ -320,6 +320,7 @@ body.dark .popup-modal {
   left: 160px;
   top: 950px;
   transform: translate(-50%, -50%);
+  cursor: pointer;
 }
 
 .confirmation-content {
