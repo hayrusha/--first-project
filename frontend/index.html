@@ -12,17 +12,16 @@
     />
     <title>Todo App</title>
   </head>
-  <!-- класс для смены темы -->
   <body id="app" class="light">
     <div class="todo-statistics" id="stats-container"></div>
 
-    <div class="center-container">
+    <div class="main-container">
       <h1>TODO LIST</h1>
-      <div class="controls">
+      <div class="todo-controls">
         <!-- формочка для ввода таски -->
-        <form id="todo-form" class="add-box" onsubmit="return false">
+        <form id="todo-form" class="add-todo-box" onsubmit="return false">
           <input type="text" id="todo-input" placeholder="Add todo..." />
-          <svg class="add-icon" width="21" height="21" viewBox="0 0 21 21">
+          <svg class="todo-add-icon" width="21" height="21" viewBox="0 0 21 21">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               height="24px"
@@ -38,7 +37,7 @@
         </form>
 
         <!-- фильтр для задач -->
-        <select name="todo" id="todo-select">
+        <select name="todo" id="todo-select" class="todo-filter">
           <option value="all">ALL</option>
           <option value="isActive">Active</option>
           <option value="completed">Done</option>
@@ -51,63 +50,18 @@
         <!-- переключение темы -->
         <label class="theme-switch">
           <input type="checkbox" id="theme-toggle" />
-          <span class="moon-icon"></span>
-          <span class="sun-icon"></span>
+          <span class="theme-icon theme-icon-moon"></span>
+          <span class="theme-icon theme-icon-sun"></span>
         </label>
       </div>
 
       <!-- список задач -->
-      <ul id="todo-list" class="todoList"></ul>
+      <ul id="todo-list" class="todo-items-list"></ul>
 
-      <!-- модалка попап -->
-      <div id="popupModal" class="popup-modal" style="display: none">
-        <div class="popup-content">
-          <p>HOORAY! Ваша первая задача создана! 🎉</p>
-        </div>
-      </div>
+      <!-- Контейнер для динамических модальных окон -->
+      <div id="modal-container"></div>
 
-      <!-- модалка подтверждения удаления -->
-      <dialog id="confirmationModal" class="confirmation-modal">
-        <div class="confirmation-content">
-          <p>Delete this task?</p>
-          <div class="timer-container">
-            <span>Auto-delete via: </span>
-            <span id="countdown">5</span>
-            <span> сек</span>
-          </div>
-          <div class="confirmation-buttons">
-            <button id="confirm-delete-btn" class="delete-btn">Delete</button>
-            <button id="cancel-delete-btn" class="cancel-btn">Cancel</button>
-          </div>
-        </div>
-      </dialog>
-
-      <!-- модалка для редактирования -->
-      <dialog id="editModal" class="edit-modal">
-        <form id="modal-box">
-          <label for="title">Title:</label>
-          <input type="text" id="title" name="title" required />
-          <div class="button-modal">
-            <button type="submit" class="apply-btn">Save</button>
-            <button type="button" id="close-btn" class="close-btn">Cancel</button>
-          </div>
-        </form>
-      </dialog>
-
-      <!-- модалка предупреждение -->
-      <dialog id="alertModal" class="alert-modal">
-        <div class="alert-content">
-          <p>
-            Oops, something went wrong: maybe there are too few characters in your
-            input...
-          </p>
-
-          <div class="alert-buttons">
-            <button id="cancel-alert-btn" class="cancel-btn">Cancel</button>
-          </div>
-        </div>
-      </dialog>
-      <button id="del-all-todo-btn" class="fab">✖</button>
+      <button id="del-all-todo-btn" class="delete-all-todos-btn">✖</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

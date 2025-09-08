@@ -13,7 +13,235 @@ const inputField = document.getElementById('todo-input');
 let deleteTimer;
 let todoToDelete = null;
 let todoToEdit = null;
-let hasCreatedFirstTodo = false;
+
+function createModal(type, config) {
+  const container = document.getElementById('modal-container');
+  if (!container) {
+    console.error('modal container not found');
+    return null;
+  }
+
+  const modalOverlay = document.createElement('div');
+  modalOverlay.id = `${type}Modal`;
+  modalOverlay.className = `modal-overlay modal-overlay-${type}`;
+
+  const modal = document.createElement('div');
+  modal.className = `modal modal-${type}`;
+
+  const content = document.createElement('div');
+  content.className = `modal-content-${type}`;
+  content.innerHTML = config.content;
+
+  modal.appendChild(content);
+  modalOverlay.appendChild(modal);
+  container.appendChild(modalOverlay);
+
+  if (config.handlers) {
+    Object.entries(config.handlers).forEach(([selector, handler]) => {
+      const elements = modal.querySelectorAll(selector);
+      elements.forEach((element) => {
+        element.addEventListener('click', (e) => handler(e, modal));
+      });
+    });
+  }
+
+  if (config.closeOnBackdrop !== false) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeModal(type);
+      }
+    });
+  }
+
+  return modalOverlay;
+}
+
+function showModal(type, config = {}) {
+  let modal = document.getElementById(`${type}Modal`);
+
+  if (!modal) {
+    modal = createModal(type, config);
+    if (!modal) return null;
+  }
+
+  if (config.beforeShow) {
+    config.beforeShow(modal);
+  }
+
+  modal.style.display = 'flex';
+  modal.classList.add('modal-show');
+
+  if (config.afterShow) {
+    config.afterShow(modal);
+  }
+
+  return modal;
+}
+
+function closeModal(type) {
+  const modal = document.getElementById(`${type}Modal`);
+  if (modal) {
+    modal.classList.remove('modal-show');
+    modal.classList.add('modal-hide');
+
+    setTimeout(() => {
+      modal.remove();
+    }, 300);
+  }
+}
+
+// конфиги для модалок
+
+const modalConfigs = {
+  alert: {
+    content: `
+    <div class='modal-header'>
+    <p>Упс, что-то пошло не так: возможно, слишком мало символов в вашем инпуте...</p>
+    </div>
+    <div class="modal__footer">
+        <button class="btn btn-primary close-alert">Понятно</button>
+      </div>
+    `,
+    handlers: {
+      '.close-alert': () => closeModal('alert'),
+    },
+  },
+
+  confirmation: {
+    content: `
+          <div class="modal-header">
+        <p>Удалить эту задачу?</p>
+        <div class="timer-display">
+          Автоудаление через: <span id="countdown">5</span> сек
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger confirm-delete">Удалить</button>
+        <button class="btn btn-secondary cancel-delete">Отмена</button>
+      </div>
+    `,
+    handlers: {
+      '.confirm-delete': () => {
+        clearInterval(window.deleteTimer);
+        closeModal('confirmation');
+        if (window.todoToDelete) {
+          performDelete(window.todoToDelete);
+        }
+      },
+      '.cancel-delete': () => {
+        clearInterval(window.deleteTimer);
+        closeModal('confirmation');
+        window.todoToDelete = null;
+      },
+    },
+  },
+
+  edit: {
+    content: `
+       <div class="modal-header">
+        <h3>Редактировать задачу</h3>
+      </div>
+          <div class="modal-body">
+        <form id='edit-form'>
+        <label class='form-label'>
+        Title: 
+        <input type='text' id='edit-title' class='form-input' required/>
+        </label>
+        </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary save-edit">Сохранить</button>
+        <button class="btn btn-secondary cancel-edit">Отмена</button>
+      </div>
+    `,
+    handlers: {
+      '.save-edit': async () => {
+        const input = document.getElementById('edit-title');
+        const newTitle = input.value.trim();
+        try {
+          await axios.patch(`${API}/${window.todoToEdit.id}`, { title: newTitle });
+
+          todos = todos.map((todo) =>
+            todo.id === window.todoToEdit.id ? { ...todo, title: newTitle } : todo,
+          );
+          localStorage.setItem('todos', JSON.stringify(todos));
+          closeModal('edit');
+
+          renderTodo(document.getElementById('todo-select').value);
+        } catch (error) {
+          console.error('Error edit todo', error);
+        }
+      },
+      '.cancel-edit': () => closeModal('edit'),
+    },
+  },
+  popup: {
+    content: `
+      <div class="success-animation">🎉</div>
+      <p>Ваша первая задача создана!</p>
+    `,
+    closeOnBackdrop: false,
+  },
+};
+
+// показ модального окна с предупреждением
+
+function showAlertModal() {
+  showModal('alert', modalConfigs.alert);
+}
+
+// показ модалки удаления с таймером
+
+function showConfirmationModal(todoId) {
+  window.todoToDelete = todoId;
+
+  showModal('confirmation', {
+    ...modalConfigs.confirmation,
+    afterShow: (modal) => {
+      const countdown = modal.querySelector('#countdown');
+      let time = 7;
+
+      window.deleteTimer = setInterval(() => {
+        time--;
+        countdown.textContent = time;
+        if (time <= 0) {
+          clearInterval(window.deleteTimer);
+          closeModal('confirmation');
+          performDelete(window.todoToDelete);
+        }
+      }, 1000);
+    },
+  });
+}
+
+// показ модалки редактирования
+function showEditModal(todoId) {
+  const todo = todos.find((todo) => todo.id === todoId);
+  if (!todo) return;
+  window.todoToEdit = todo;
+
+  showModal('edit', {
+    ...modalConfigs.edit,
+    beforeShow: (modal) => {
+      const input = modal.querySelector('#edit-title');
+      if (input) {
+        input.value = todo.title;
+      }
+    },
+  });
+}
+// popup
+function showFirstTodoPopup() {
+  const modal = showModal('popup', {
+    ...modalConfigs.popup,
+    afterShow: (modal) => {
+     setTimeout(() => {
+      modal.remove()
+     },9000)
+    },
+  });
+}
 
 // отрисовка
 function renderTodo(filterType = 'all') {
@@ -61,7 +289,7 @@ function renderTodo(filterType = 'all') {
     editBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      editTodo(todo.id);
+      showEditModal(todo.id);
     });
 
     const delBtn = document.createElement('button');
@@ -75,7 +303,7 @@ function renderTodo(filterType = 'all') {
     delBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      deletedTodo(todo.id);
+      showConfirmationModal(todo.id);
     });
 
     const todoActions = document.createElement('div');
@@ -173,11 +401,7 @@ document.getElementById('todo-form').addEventListener('submit', async (e) => {
   e.stopPropagation();
   const title = todoInput.value.trim();
   if (!title) {
-    const alertModal = document.getElementById('alertModal');
-    alertModal.showModal();
-    document.getElementById('cancel-alert-btn').addEventListener('click', () => {
-      alertModal.close();
-    });
+    showAlertModal();
     return;
   }
 
@@ -191,6 +415,10 @@ document.getElementById('todo-form').addEventListener('submit', async (e) => {
     todos.push(response.data);
     addedAllTimeTodo++;
     saveSessionStats();
+
+    if (todos.length === 1) {
+      showFirstTodoPopup();
+    }
     localStorage.setItem('todos', JSON.stringify(todos));
     todoInput.value = '';
     renderTodo(selectTodo.value);
@@ -206,34 +434,12 @@ todoInput.addEventListener('keydown', (e) => {
   }
 });
 
-// удаление с модальным окном
-async function deletedTodo(id) {
-  todoToDelete = id;
-  const confirmationModal = document.getElementById('confirmationModal');
-  const countdown = document.getElementById('countdown');
-
-  confirmationModal.showModal();
-
-  let timeLeft = 5;
-  countdown.textContent = timeLeft;
-
-  deleteTimer = setInterval(() => {
-    timeLeft--;
-    countdown.textContent = timeLeft;
-
-    if (timeLeft <= 0) {
-      clearInterval(deleteTimer);
-      confirmationModal.close();
-      performDelete(todoToDelete);
-    }
-  }, 1000);
-}
+// удаление
 
 async function performDelete(id) {
   try {
     await axios.delete(`${API}/${id}`);
     todos = todos.filter((todo) => todo.id !== id);
-
     deletedAllTimeTodo++;
     saveSessionStats();
 
@@ -273,22 +479,10 @@ document.getElementById('del-all-todo-btn').addEventListener('click', async () =
   }
 });
 
-// редактирование
-async function editTodo(id) {
-  todoToEdit = todos.find((todo) => todo.id === id);
-  if (!todoToEdit) return;
-
-  const editModal = document.getElementById('editModal');
-  const titleInput = document.getElementById('title');
-
-  titleInput.value = todoToEdit.title;
-  editModal.showModal();
-}
-
 // смена темы
 function updateIcons() {
-  const moonIcon = document.querySelector('.moon-icon');
-  const sunIcon = document.querySelector('.sun-icon');
+  const moonIcon = document.querySelector('.theme-icon-moon');
+  const sunIcon = document.querySelector('.theme-icon-sun');
   if (themeToggle.checked) {
     moonIcon.style.opacity = '0';
     sunIcon.style.opacity = '1';
@@ -327,71 +521,10 @@ themeToggle.addEventListener('change', () => {
   updateIcons();
 });
 
-// обработчики для кнопок подтверждения удаления
-document.getElementById('confirm-delete-btn').addEventListener('click', (e) => {
-  e.preventDefault();
-  clearInterval(deleteTimer);
-  document.getElementById('confirmationModal').close();
-  performDelete(todoToDelete);
-});
-
-document.getElementById('cancel-delete-btn').addEventListener('click', (e) => {
-  e.preventDefault();
-  clearInterval(deleteTimer);
-  document.getElementById('confirmationModal').close();
-  todoToDelete = null;
-});
-
-// обработчик формы редактирования
-document.getElementById('modal-box').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const newTitle = document.getElementById('title').value.trim();
-  if (!newTitle) return;
-
-  try {
-    await axios.patch(`${API}/${todoToEdit.id}`, {
-      title: newTitle,
-    });
-
-    todos = todos.map((todo) =>
-      todo.id === todoToEdit.id ? { ...todo, title: newTitle } : todo,
-    );
-
-    localStorage.setItem('todos', JSON.stringify(todos));
-    document.getElementById('editModal').close();
-
-    renderTodo(selectTodo.value);
-  } catch (error) {
-    console.error('Error editing todo:', error);
-  }
-});
-
-// обработчик кнопки отмены редактирования
-document.getElementById('close-btn').addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('editModal').close();
-});
-
 // обработчик изменения сортировки
 
 document.getElementById('todo-sort').addEventListener('change', () => {
   renderTodo(document.getElementById('todo-select').value);
-});
-
-// закрытие модальных окон по клику на backdrop
-document.getElementById('confirmationModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('confirmationModal')) {
-    clearInterval(deleteTimer);
-    document.getElementById('confirmationModal').close();
-    todoToDelete = null;
-  }
-});
-
-document.getElementById('editModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('editModal')) {
-    document.getElementById('editModal').close();
-  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -401,6 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addedAllTimeTodo = stats.added || 0;
     deletedAllTimeTodo = stats.deleted || 0;
   }
+
   chosenTheme();
   getTodos();
 });

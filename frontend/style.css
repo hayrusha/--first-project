@@ -37,7 +37,7 @@ h1 {
   margin-bottom: 18px;
 }
 
-.center-container {
+.main-container {
   max-width: 1000px;
   margin: 48px auto 0 auto;
   background: transparent;
@@ -46,7 +46,7 @@ h1 {
   position: relative;
 }
 
-.controls {
+.todo-controls {
   display: flex;
   gap: 8px;
   justify-content: center;
@@ -54,7 +54,7 @@ h1 {
   align-items: center;
 }
 
-.add-box {
+.add-todo-box {
   position: relative;
   width: 500px;
 }
@@ -75,7 +75,7 @@ body.dark #todo-input {
   border: 1px solid #fff;
 }
 
-.add-icon {
+.todo-add-icon {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -84,16 +84,7 @@ body.dark #todo-input {
   color: var(--color-accent);
 }
 
-#todo-select {
-  background: var(--color-accent);
-  color: var(--color-text-light);
-  border: none;
-  border-radius: 4px;
-  padding: 0 16px;
-  height: 38px;
-  font-size: 1rem;
-}
-
+.todo-filter,
 .todo-sort {
   background: var(--color-accent);
   color: var(--color-text-light);
@@ -121,8 +112,8 @@ body.dark #todo-input {
   z-index: 2;
 }
 
-.moon-icon,
-.sun-icon {
+.theme-icon-moon,
+.theme-icon-sun {
   position: absolute;
   top: 0;
   left: 0;
@@ -137,26 +128,26 @@ body.dark #todo-input {
   z-index: 1;
 }
 
-.moon-icon {
+.theme-icon-moon {
   background-image: url('./public/moon.svg');
   opacity: 1;
 }
 
-.sun-icon {
+.theme-icon-sun {
   background-image: url('./public/sunny.svg');
   opacity: 0;
 }
 
-.theme-switch input:checked ~ .moon-icon {
+.theme-switch input:checked ~ .theme-icon-moon {
   opacity: 0;
 }
 
-.theme-switch input:checked ~ .sun-icon {
+.theme-switch input:checked ~ .theme-icon-sun {
   opacity: 1;
 }
 
 /* список задач */
-.todoList {
+.todo-items-list {
   position: relative;
   left: -160px;
   width: 500px;
@@ -170,7 +161,7 @@ body.dark #todo-input {
   padding: 10px;
 }
 
-body.dark .todoList {
+body.dark .todo-items-list {
   border-color: #fff;
 }
 
@@ -200,9 +191,9 @@ body.dark .todo-item {
 
 /* кнопки + edit и delete */
 .del-btn {
-  background-color: var(--bg-secondary, #f5f5f5);
-  color: var(--text-primary, #666);
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 4px 6px;
   cursor: pointer;
@@ -213,15 +204,15 @@ body.dark .todo-item {
 }
 
 .del-btn:hover {
-  background-color: var(--hover-bg, rgba(255, 0, 0, 0.1));
-  color: var(--hover-color, #ff4444);
-  border-color: var(--hover-border, #ff4444);
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ff4444;
+  border-color: #ff4444;
 }
 
 .edit-btn {
-  background-color: var(--bg-secondary, #f5f5f5);
-  color: var(--text-primary, #666);
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 4px 6px;
   cursor: pointer;
@@ -232,9 +223,17 @@ body.dark .todo-item {
 }
 
 .edit-btn:hover {
-  background-color: var(--hover-bg, rgba(0, 123, 255, 0.1));
-  color: var(--hover-color, #007bff);
-  border-color: var(--hover-border, #007bff);
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+  border-color: #007bff;
+}
+
+body.dark .del-btn {
+  background: var(--color-bg-dark);
+}
+
+body.dark .edit-btn {
+  background: var(--color-bg-dark);
 }
 
 .todo-actions {
@@ -244,7 +243,7 @@ body.dark .todo-item {
 }
 
 /* кнопка удаления всех полей формы */
-.fab {
+.delete-all-todos-btn {
   position: fixed;
   right: 32px;
   bottom: 32px;
@@ -263,187 +262,288 @@ body.dark .todo-item {
   transition: background 0.2s;
 }
 
-.fab:hover {
+.delete-all-todos-btn:hover {
   background: #5a52e6;
 }
 
 /* стили для модалок */
-.edit-modal,
-.alert-modal {
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 20px;
+.modal-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-body.dark .confirmation-modal,
-body.dark .edit-modal,
-body.dark .alert-modal,
-body.dark .popup-modal {
-  background: var(--color-bg-dark);
-  color: var(--color-text-light);
-}
-
-/* модалка уведомление */
-
-.alert-modal {
-  width: 400px;
-}
-
-.alert-content {
-  text-align: center;
-}
-
-.alert-content p {
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.alert-buttons {
-  display: flex;
-  gap: 10px;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: none; 
   justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* модалка удаления с таймером*/
-.confirmation-modal {
-  width: 300px;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 20px;
+.modal-overlay.modal-show {
+  display: flex !important;
+  opacity: 1;
+}
+
+.modal-overlay.modal-hide {
+  opacity: 0;
+}
+
+/* popup */
+
+.modal-overlay-popup {
   position: fixed;
-  left: 160px;
-  top: 950px;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  display: none;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 10000;
+  pointer-events: none;
 }
 
-.confirmation-content {
-  text-align: center;
-}
-
-.confirmation-content p {
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.timer-container {
-  margin-bottom: 20px;
-  font-size: 1rem;
-}
-
-.timer-container #countdown {
-  font-weight: bold;
-  color: var(--color-accent);
-  font-size: 1.2rem;
-}
-
-.confirmation-buttons {
+.modal-overlay-popup.modal-show {
   display: flex;
-  gap: 10px;
-  justify-content: center;
 }
 
-.delete-btn,
-.cancel-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
+.modal-popup {
+  width: 280px !important;
+  height: auto !important;
+  background: #ffffff;
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px var(--color-accent);
+  padding: 0;
+  transform: translateY(-20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: auto;
 }
 
-.delete-btn {
-  background: #e50000;
-  color: white;
+.modal-overlay-popup.modal-show .modal-popup {
+  animation: slideLeft 9s linear forwards;
 }
 
-.cancel-btn {
-  background: var(--color-accent);
-  color: white;
+.modal-content-popup {
+  padding: 16px !important;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 12px;
 }
 
-.delete-btn:hover {
-  background: #cc0000;
-}
-
-.cancel-btn:hover {
-  background: #5a52e6;
-}
-
-/* модалка для редактирования */
-.edit-modal {
-  width: 400px;
-}
-
-.edit-modal label {
-  display: block;
+.modal-content-popup .success-icon {
+  font-size: 1.8rem;
   margin-bottom: 8px;
-  font-weight: 500;
+  display: block;
 }
 
-.edit-modal input[type='text'] {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid var(--color-accent);
-  border-radius: 4px;
-  font-size: 1rem;
+.modal-content-popup p {
+  font-size: 0.95rem !important;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.3;
 }
 
-body.dark .edit-modal input[type='text'] {
+body.dark .modal-popup,
+.modal-content-popup {
+  background: var(--color-bg-dark);
+  border-color: var(--color-accent);
+}
+
+body.dark .modal-content-popup p {
+  color: var(--color-text-light);
+}
+
+/* модалка автоудаления */
+
+.modal-overlay-confirmation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  display: none;
+  z-index: 10000;
+}
+
+.modal-overlay-confirmation.modal-show {
+  display: block;
+}
+
+.modal-confirmation {
+  position: fixed !important;
+  bottom: 20px !important;
+  left: 20px !important;
+  width: 300px !important;
+  height: auto !important;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  z-index: 10001;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay-confirmation.modal-show .modal-confirmation {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-content-confirmation {
+  padding: 20px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+body.dark .modal-confirmation {
   background: var(--color-bg-dark);
   color: var(--color-text-light);
-  border-color: #fff;
+  border: 1px solid #444;
 }
 
-.button-modal {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+body.dark .modal-content-confirmation {
+  background: var(--color-bg-dark);
 }
-
-.apply-btn,
-.close-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-
-.apply-btn {
-  background: var(--color-accent);
-  color: white;
-}
-
-.close-btn {
-  background: #ccc;
+/* заголовок модалки */
+.modal-header h3 {
+  margin: 0 0 24px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: #333;
 }
 
-.apply-btn:hover {
-  background: #5a52e6;
+body.dark .modal-header h3 {
+  color: var(--color-text-light);
 }
 
-.close-btn:hover {
-  background: #bbb;
+.modal-body {
+  margin-bottom: 32px;
 }
 
-.confirmation-modal::backdrop,
-.edit-modal::backdrop {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
+.modal-footer {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
 }
 
-/* анимации */
+/* стили кнопок модалок */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: #6366f1;
+  color: white;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* поля ввода */
+.form-label {
+  display: block;
+  text-align: left;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+body.dark .form-label {
+  color: var(--color-text-light);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  background: #ffffff;
+  color: #374151;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+body.dark .form-input {
+  background: var(--color-bg-dark);
+  color: var(--color-text-light);
+  border-color: #6b7280;
+}
+
+body.dark .form-input:focus {
+  border-color: #6366f1;
+}
+
+/* таймер */
+.timer-display {
+  font-weight: 600;
+  color: #6366f1;
+  margin-top: 16px;
+  font-size: 1.1rem;
+  padding: 8px 16px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+body.dark .timer-display {
+  color: #93c5fd;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* анимация тряски инпута */
 
 @keyframes shake {
   0% {
@@ -465,4 +565,29 @@ body.dark .edit-modal input[type='text'] {
 
 .shake {
   animation: shake 0.5s ease-in-out;
+}
+
+/* анимация popup */
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(-350px) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-280px) scale(0.9);
+  }
+  50% {
+    transform: translateX(calc(50vw - 140px)) scale(1);
+    opacity: 1;
+  }
+  90% {
+    transform: translateX(calc(100vw - 100px)) scale(0.9);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw) scale(0.8);
+    opacity: 0;
+  }
 }
